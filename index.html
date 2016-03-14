@@ -10,8 +10,8 @@
             overflow: hidden;
         }
         #canvas {
-            width: 500px;
-            height: 400px;
+            width: 800px;
+            height: 600px;
             background: #f0f;
         }
     </style>
@@ -19,7 +19,7 @@
 </head>
 <body> 
     
-    <canvas id="canvas" width="500" height="400">
+    <canvas id="canvas" width="800" height="600">
     </canvas>
 </body>
 <script>
@@ -31,6 +31,7 @@ var globalEvent = null
 var startTime = null
 var result = []
 canvas.onmousedown = canvas.ontouchstart = function(e) {
+    e.preventDefault()
     isMousedownFlag = true
     ctx.moveTo(e.touches ? e.touches[0].pageX : e.pageX, e.touches ? e.touches[0].pageY : e.pageY)
     
@@ -47,6 +48,7 @@ canvas.onmousedown = canvas.ontouchstart = function(e) {
 }
 
 canvas.onmousemove = canvas.ontouchmove = function(e) {
+    e.preventDefault()
     if (isMousedownFlag) {
         var x = e.touches ? e.touches[0].pageX : e.pageX
         var y = e.touches ? e.touches[0].pageY : e.pageY
@@ -63,6 +65,7 @@ canvas.onmousemove = canvas.ontouchmove = function(e) {
 }
 
 canvas.onmouseup = canvas.ontouchend = function(e) {
+    e.preventDefault()
     globalEvent = null
     isMousedownFlag = false
     if (timerRecord) clearInterval(timerRecord)
