@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<head>
+    <meta content="width=device-width,maximum-scale=1.0,initial-scale=1.0,minimum-scale=1.0,user-scalable=yes,shrink-to-fit=no" name="viewport">
+    <style>
+        * {margin: 0; padding: 0;}
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #canvas {
+            width: 800px;
+            height: 600px;
+            background: #f0f;
+        }
+    </style>
+    
+</head>
+<body> 
+    
+    <canvas id="canvas" width="800" height="600">
+    </canvas>
+</body>
+<script>
+var canvas = document.getElementById('canvas')
+var ctx = canvas.getContext('2d')
+var isMousedownFlag = false
+var timerRecord = null
+var globalEvent = null
+var startTime = null
+var result = []
+canvas.onmousedown = canvas.ontouchstart = function(e) {
+    isMousedownFlag = true
+    ctx.moveTo(e.touches ? e.touches[0].pageX : e.pageX, e.touches ? e.touches[0].pageY : e.pageY)
+    
+    startTime = +new Date
+    // timerRecord = setInterval(function() {
+    //     if (globalEvent) {
+    //         result.push({
+    //             x: globalEvent.pageX,
+    //             y: globalEvent.pageY,
+    //             t: +new Date - startTime
+    //         })    
+    //     }
+    // }, 100)
+}
+
+canvas.onmousemove = canvas.ontouchmove = function(e) {
+    if (isMousedownFlag) {
+        var x = e.touches ? e.touches[0].pageX : e.pageX
+        var y = e.touches ? e.touches[0].pageY : e.pageY
+        ctx.lineTo(x, y)
+        ctx.stroke()
+        result.push({
+            type: e.type,
+            x: x,
+            y: y,
+            t: +new Date - startTime
+        })
+        globalEvent = e
+    }
+}
+
+canvas.onmouseup = canvas.ontouchend = function(e) {
+    globalEvent = null
+    isMousedownFlag = false
+    if (timerRecord) clearInterval(timerRecord)
+}
+
+
+// var preData = [{"type":"mousemove","x":218,"y":70},{"type":"mousemove","x":218,"y":72},{"type":"mousemove","x":217,"y":75},{"type":"mousemove","x":215,"y":79},{"type":"mousemove","x":214,"y":85},{"type":"mousemove","x":211,"y":92},{"type":"mousemove","x":208,"y":99},{"type":"mousemove","x":205,"y":107},{"type":"mousemove","x":202,"y":116},{"type":"mousemove","x":199,"y":122},{"type":"mousemove","x":196,"y":128},{"type":"mousemove","x":193,"y":134},{"type":"mousemove","x":191,"y":139},{"type":"mousemove","x":188,"y":144},{"type":"mousemove","x":186,"y":149},{"type":"mousemove","x":184,"y":152},{"type":"mousemove","x":181,"y":155},{"type":"mousemove","x":179,"y":159},{"type":"mousemove","x":175,"y":162},{"type":"mousemove","x":170,"y":166},{"type":"mousemove","x":166,"y":170},{"type":"mousemove","x":162,"y":173},{"type":"mousemove","x":159,"y":175},{"type":"mousemove","x":156,"y":177},{"type":"mousemove","x":154,"y":178},{"type":"mousemove","x":153,"y":178},{"type":"mousemove","x":152,"y":178},{"type":"mousemove","x":150,"y":178},{"type":"mousemove","x":149,"y":178},{"type":"mousemove","x":148,"y":178},{"type":"mousemove","x":146,"y":178},{"type":"mousemove","x":145,"y":178},{"type":"mousemove","x":145,"y":177},{"type":"mousemove","x":144,"y":176},{"type":"mousemove","x":143,"y":175},{"type":"mousemove","x":143,"y":174},{"type":"mousemove","x":143,"y":172},{"type":"mousemove","x":143,"y":170},{"type":"mousemove","x":143,"y":168},{"type":"mousemove","x":143,"y":165},{"type":"mousemove","x":143,"y":161},{"type":"mousemove","x":143,"y":155},{"type":"mousemove","x":145,"y":148},{"type":"mousemove","x":148,"y":141},{"type":"mousemove","x":150,"y":137},{"type":"mousemove","x":152,"y":133},{"type":"mousemove","x":154,"y":131},{"type":"mousemove","x":157,"y":129},{"type":"mousemove","x":162,"y":126},{"type":"mousemove","x":171,"y":123},{"type":"mousemove","x":180,"y":122},{"type":"mousemove","x":190,"y":122},{"type":"mousemove","x":198,"y":122},{"type":"mousemove","x":206,"y":125},{"type":"mousemove","x":213,"y":127},{"type":"mousemove","x":218,"y":130},{"type":"mousemove","x":223,"y":132},{"type":"mousemove","x":225,"y":134},{"type":"mousemove","x":227,"y":135},{"type":"mousemove","x":228,"y":136},{"type":"mousemove","x":229,"y":137},{"type":"mousemove","x":229,"y":138}]
+
+// ctx.moveTo(preData[0].x, preData[0].y)
+
+// var len = preData.length - 1
+// var node = null
+// while (node = preData[len--]) {
+//     ctx.lineTo(node.x, node.y)
+//     ctx.stroke()
+// }
+</script>
+    
+    
+</html>
