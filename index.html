@@ -11,25 +11,51 @@
         }
         #canvas {
             width: 800px;
-            height: 600px;
-            background: #fff;
+            height: 450px;
+            background: #f0f;
         }
+        #canvasScrollbar {
+            width: 800px;
+            height: 100px;
+            background: #00f;
+        }
+        .wrapper {
+    position: relative;
+    width: 400px;
+    height: 300px;
+}
+
+.wrapper canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
     </style>
     
 </head>
 <body> 
-    
+        
     <canvas id="canvas" width="800" height="600">
     </canvas>
+    
+     <canvas id="canvasScrollbar" width="800" height="100">
+    </canvas>
+ 
 </body>
 <script>
 var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')
 var isMousedownFlag = false
+var isFirstProgressBarFlag = true
+var numberOfResult=0
 var timerRecord = null
 var globalEvent = null
+var maxVal = 0
 var startTime = null
 var result = []
+
+
 canvas.onmousedown = canvas.ontouchstart = function(e) {
     e.preventDefault()
     isMousedownFlag = true
@@ -46,6 +72,7 @@ canvas.onmousedown = canvas.ontouchstart = function(e) {
     //     }
     // }, 100)
 }
+
 
 canvas.onmousemove = canvas.ontouchmove = function(e) {
     e.preventDefault()
@@ -64,15 +91,114 @@ canvas.onmousemove = canvas.ontouchmove = function(e) {
     }
 }
 
+
 canvas.onmouseup = canvas.ontouchend = function(e) {
     e.preventDefault()
     globalEvent = null
     isMousedownFlag = false
+    
+    numberOfResult = result.length
+    if (numberOfResult>0){
+    maxVal=result[numberOfResult-1].t
+}
     if (timerRecord) clearInterval(timerRecord)
+  //  drawScrollbar ()
 }
 
 
-// var preData = [{"type":"mousemove","x":218,"y":70},{"type":"mousemove","x":218,"y":72},{"type":"mousemove","x":217,"y":75},{"type":"mousemove","x":215,"y":79},{"type":"mousemove","x":214,"y":85},{"type":"mousemove","x":211,"y":92},{"type":"mousemove","x":208,"y":99},{"type":"mousemove","x":205,"y":107},{"type":"mousemove","x":202,"y":116},{"type":"mousemove","x":199,"y":122},{"type":"mousemove","x":196,"y":128},{"type":"mousemove","x":193,"y":134},{"type":"mousemove","x":191,"y":139},{"type":"mousemove","x":188,"y":144},{"type":"mousemove","x":186,"y":149},{"type":"mousemove","x":184,"y":152},{"type":"mousemove","x":181,"y":155},{"type":"mousemove","x":179,"y":159},{"type":"mousemove","x":175,"y":162},{"type":"mousemove","x":170,"y":166},{"type":"mousemove","x":166,"y":170},{"type":"mousemove","x":162,"y":173},{"type":"mousemove","x":159,"y":175},{"type":"mousemove","x":156,"y":177},{"type":"mousemove","x":154,"y":178},{"type":"mousemove","x":153,"y":178},{"type":"mousemove","x":152,"y":178},{"type":"mousemove","x":150,"y":178},{"type":"mousemove","x":149,"y":178},{"type":"mousemove","x":148,"y":178},{"type":"mousemove","x":146,"y":178},{"type":"mousemove","x":145,"y":178},{"type":"mousemove","x":145,"y":177},{"type":"mousemove","x":144,"y":176},{"type":"mousemove","x":143,"y":175},{"type":"mousemove","x":143,"y":174},{"type":"mousemove","x":143,"y":172},{"type":"mousemove","x":143,"y":170},{"type":"mousemove","x":143,"y":168},{"type":"mousemove","x":143,"y":165},{"type":"mousemove","x":143,"y":161},{"type":"mousemove","x":143,"y":155},{"type":"mousemove","x":145,"y":148},{"type":"mousemove","x":148,"y":141},{"type":"mousemove","x":150,"y":137},{"type":"mousemove","x":152,"y":133},{"type":"mousemove","x":154,"y":131},{"type":"mousemove","x":157,"y":129},{"type":"mousemove","x":162,"y":126},{"type":"mousemove","x":171,"y":123},{"type":"mousemove","x":180,"y":122},{"type":"mousemove","x":190,"y":122},{"type":"mousemove","x":198,"y":122},{"type":"mousemove","x":206,"y":125},{"type":"mousemove","x":213,"y":127},{"type":"mousemove","x":218,"y":130},{"type":"mousemove","x":223,"y":132},{"type":"mousemove","x":225,"y":134},{"type":"mousemove","x":227,"y":135},{"type":"mousemove","x":228,"y":136},{"type":"mousemove","x":229,"y":137},{"type":"mousemove","x":229,"y":138}]
+//progress Bar
+var progressBarEvent = null
+var progressBarResult = []
+var progressBarMax = 800;
+var progressBarVal = 0;
+var fillVal=0;
+var dragging = false
+var lastX = 0
+var translated = 0;
+
+var canvasScrollbar = document.getElementById('canvasScrollbar')
+var ctxScrollbar = canvasScrollbar.getContext('2d')
+
+//canvasScrollbar.setUseObjectMouseEvents(true);
+canvasScrollbar.onmousedown = function(e){
+  var evt = e || event;
+  dragging = true;
+  lastX = evt.offsetX;
+}
+
+//Draw the graphy according to the position of scrollbar
+canvasScrollbar.onmousemove = function(e){
+  var evt = e || event;
+  if (dragging){
+      var delta = evt.offsetX - lastX;
+      translated += delta; //?
+      ctxScrollbar.translate(delta, 0); //?
+      lastX = evt.offsetX;
+      fillVal = e.touches ? e.touches[0] : lastX
+      progressBarEvent = e
+  }
+  drawBack(fillVal);
+}
+
+canvasScrollbar.onmouseup = function(e){
+    var evt = e || event;
+    if (dragging){
+     //   var delta = evt.offsetX - lastX;
+       // lastX = evt.offsetX;
+       // var x = e.touches ? e.touches[0] : lastX
+        progressBarResult.push({
+            x: fillVal
+        })
+        progressBarEvent = e
+    }
+    //ToDo: get ready for camera and video recording
+    dragging = false;
+    e.preventDefault()
+    progressBarEvent = null
+    isMousedownFlag = false
+    drawScrollbar ();
+}
+
+//dRAW Scollbar, so people know where the bar is dragged to 
+function drawScrollbar () {
+    direction = "horizontal";
+    if (isFirstProgressBarFlag){
+        ctxScrollbar.fillStyle = '#000';
+        ctxScrollbar.fillRect(0, 460, 800, 20);  
+        isFirstProgressBarFlag=false
+    }else{
+        if(result.length >0){
+          // Draw the fill
+            progressBarVal=result[numberOfResult-1].t
+            ctxScrollbar.fillStyle = '#98000';
+            fillVal = progressBarMax/maxVal*progressBarResult[progressBarResult.length-1].x;
+            ctxScrollbar.fillRect(0, 460, fillVal, 20);
+        }
+    }
+}
+
+
+function drawBack(position){
+    //find the index according to the time value of the object
+    var location = findIndexWithTime(result,t, position)
+    // go through a loop to draw the image
+    var node = null
+    while (node = result[location]) {
+        ctx.lineTo(node.x, node.y)
+        ctx.stroke()
+    }
+}
+
+//find the index of the object according to the time value
+function findIndexWithTime(array, attr, value) {
+    for(var i = 0; i < array.length; i += 1) {
+        if(array[i][attr] === value) {
+            return i;
+        }
+    }
+}
+
+// var preData = [{"type":"mousemove","x":218,"y":70},{"type":"mousemove","x":218,"y":72},{"type":"mousemove","x":217,"y":75},{"type":"mousemove","x":215,"y":79},{"type":"mousemove","x":214,"y":85},{"type":"mousemove","x":211,"y":92},{"type":"mousemove","x":208,"y":99},{"type":"mousemove","x":205,"y":107},{"type":"mousemove","x":202,"y":116},{"type":"mousemove","x":199,"y":122}]
 
 // ctx.moveTo(preData[0].x, preData[0].y)
 
@@ -82,6 +208,7 @@ canvas.onmouseup = canvas.ontouchend = function(e) {
 //     ctx.lineTo(node.x, node.y)
 //     ctx.stroke()
 // }
+
 </script>
     
     
