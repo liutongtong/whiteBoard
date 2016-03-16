@@ -11,7 +11,7 @@
         }
         #canvas {
             width: 800px;
-            height: 450px;
+            height: 600px;
             background: #f0f;
         }
         #canvasScrollbar {
@@ -31,16 +31,44 @@
     left: 0;
 }
 
+.rangeBar{
+    width: 800px;
+}
+
+.rangeBar input{
+    width: calc(100% - 60px);
+    vertical-align: middle;
+}
+
+.controlButton{
+    width: 35px;
+    height: 35px;
+    background: url(img/play_black.png);
+    display: inline-block;
+    background-size: cover;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.controlButton.pause {
+    background-image: url(img/pause_black.png);
+}
     </style>
     
 </head>
-<body> 
-        
-    <canvas id="canvas" width="800" height="600">
-    </canvas>
+<body>
     
-     <canvas id="canvasScrollbar" width="800" height="100">
+    <div>
+        <canvas id="canvas" width="800" height="600">
     </canvas>
+    </div>
+    <div id="rangeBar" class="rangeBar">
+        <span class="controlButton"></span>
+        <input id="rangeBarInput" type="range" min="0" max ="100" value="0">
+    </div>
+    
+     <!--<canvas id="canvasScrollbar" width="800" height="100">
+    </canvas>-->
  
 </body>
 <script>
@@ -59,9 +87,17 @@ var result = []
 canvas.onmousedown = canvas.ontouchstart = function(e) {
     e.preventDefault()
     isMousedownFlag = true
+    
+    startTime = startTime || +new Date
+    
     ctx.moveTo(e.touches ? e.touches[0].pageX : e.pageX, e.touches ? e.touches[0].pageY : e.pageY)
     
-    startTime = +new Date
+    //startTime = +new Date
+    
+    result.push({
+        type: e.type,
+        t: +new Date - startTime
+    })
     // timerRecord = setInterval(function() {
     //     if (globalEvent) {
     //         result.push({
@@ -97,15 +133,15 @@ canvas.onmouseup = canvas.ontouchend = function(e) {
     globalEvent = null
     isMousedownFlag = false
     
-    numberOfResult = result.length
-    if (numberOfResult>0){
-    maxVal=result[numberOfResult-1].t
+    // numberOfResult = result.length
+    // if (numberOfResult>0){
+    // maxVal=result[numberOfResult-1].t
 }
-    if (timerRecord) clearInterval(timerRecord)
+    // if (timerRecord) clearInterval(timerRecord)
   //  drawScrollbar ()
-}
+// }
 
-
+/*
 //progress Bar
 var progressBarEvent = null
 var progressBarResult = []
@@ -137,6 +173,7 @@ canvasScrollbar.onmousemove = function(e){
       fillVal = e.touches ? e.touches[0] : lastX
       progressBarEvent = e
   }
+  
   drawBack(fillVal);
 }
 
@@ -197,6 +234,7 @@ function findIndexWithTime(array, attr, value) {
         }
     }
 }
+*/
 
 // var preData = [{"type":"mousemove","x":218,"y":70},{"type":"mousemove","x":218,"y":72},{"type":"mousemove","x":217,"y":75},{"type":"mousemove","x":215,"y":79},{"type":"mousemove","x":214,"y":85},{"type":"mousemove","x":211,"y":92},{"type":"mousemove","x":208,"y":99},{"type":"mousemove","x":205,"y":107},{"type":"mousemove","x":202,"y":116},{"type":"mousemove","x":199,"y":122}]
 
@@ -208,6 +246,125 @@ function findIndexWithTime(array, attr, value) {
 //     ctx.lineTo(node.x, node.y)
 //     ctx.stroke()
 // }
+
+// [{
+//     x:0,
+//     y:1,
+//     t:1
+// }, {
+//     x:100,
+//     y:100,
+//     t:112
+// }, {
+//     x:100,
+//     y:100,
+//     t:132
+// }]
+
+// // 100ms
+
+// [100, 100, 100]
+
+// [[{
+//     x:0,
+//     y:1,
+//     t:1
+// }, {
+//     x:0,
+//     y:1,
+//     t:99
+// }], [
+//     {
+//         x:0,
+//         y:1,
+//         t:100
+//     }, {
+//         x:0,
+//         y:1,
+//         t:101
+//     }
+// ], []]
+
+
+
+var rangeBarInput = document.getElementById('rangeBarInput')
+rangeBarInput.addEventListener('change', function(e) {
+  //  console.log(e.target.value)
+  var curData = getArrayByPos(e.target.value)
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.beginPath()
+  ctx.moveTo(curData[0].x, curData[0].y)
+  curData.map(function(item) {
+        if (item.type === 'mousedown') {
+            ctx.beginPath()         
+        }
+        curData.shift()
+        ctx.lineTo(item.x, item.y)
+        ctx.stroke()      
+  })
+})
+
+var controlButton = document.querySelector('#rangeBar .controlButton')
+var curPos = 0
+var playTimer
+
+
+function getArrayByPos(pos) {
+    var data = result.slice(0)
+    var t = data[data.length - 1].t - data[0].t
+    var xx = []
+     data.some(function(item) {
+        if (item.t < t * pos / 100) {
+            xx.push(item)
+        } 
+     })
+     return xx
+} 
+
+function handleButon(e) {
+    var speed =  Math.min(result.length/10, 100)
+   // var speed =  result.length/100
+    var data = result.slice(0)
+    var isPlaying = controlButton.className === 'controlButton'
+    if (isPlaying) {
+        controlButton.className = 'controlButton pause'
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        var beginIndex = 0;
+        var t = data[data.length - 1].t - data[0].t
+        ctx.beginPath()
+        playTimer = setInterval(function() {
+            if (curPos === 100) {
+                rangeBarInput.value = curPos = 0
+                controlButton.className = 'controlButton'
+                return clearInterval(playTimer)
+            }
+            rangeBarInput.value = curPos++
+            data.some(function(item) {
+                if (item.t < t * curPos / 100) {
+                     console.log(item.type)
+                    if (item.type === 'mousedown') {
+                        console.log(11)
+                        ctx.beginPath()
+                    }
+                    data.shift()
+                    ctx.lineTo(item.x, item.y)
+                    ctx.stroke()
+                } else return true
+            })
+        }, speed)
+    }
+    
+  //  1000 - 30000 /  result.length
+    else {
+        controlButton.className = 'controlButton'
+        clearInterval(playTimer)
+    }
+}
+controlButton.addEventListener('click', handleButon)
+controlButton.addEventListener('touchend', handleButon)
+
+
+
 
 </script>
     
