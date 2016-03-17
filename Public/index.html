@@ -12,7 +12,7 @@
         #canvas {
             width: 800px;
             height: 600px;
-            background: #f0f;
+            /*background: #f0f;*/
         }
         #canvasScrollbar {
             width: 800px;
@@ -36,7 +36,7 @@
 }
 
 .rangeBar input{
-    width: calc(100% - 60px);
+    width: calc(100% - 250px);
     vertical-align: middle;
 }
 
@@ -48,10 +48,58 @@
     background-size: cover;
     vertical-align: middle;
     cursor: pointer;
+    margin-right: 10px;
 }
 
 .controlButton.pause {
     background-image: url(img/pause_black.png);
+}
+
+.rangeBar .btn {
+    display: inline-block;
+    width: 50px;
+    margin-left: 10px;
+}
+
+.rangeBar .btn button {
+    width: 100%;
+    height: 25px;
+    padding: 5px;
+}
+
+.cover{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.5);
+    display: none;
+}
+
+.cover .msg {
+    position: absolute;
+    margin: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 400px;
+    height: 500px;
+    background: #fff;
+    font-size: 1.5em;
+    line-height: 1.5;
+    padding: 10px;
+}
+
+.cover .close {
+    position: absolute;
+    right: 10px;
+    font-size: 40px;
+    line-height: 0;
+    top: 20px;
+    cursor: pointer;
 }
     </style>
     
@@ -65,12 +113,26 @@
     <div id="rangeBar" class="rangeBar">
         <span class="controlButton"></span>
         <input id="rangeBarInput" type="range" min="0" max ="100" value="0">
+        <div class="save btn"><button>Save</button></div>
+        <div class="share btn"><button>Share</button></div>
+        <div class="email btn"><button>Email</button></div>
     </div>
     
      <!--<canvas id="canvasScrollbar" width="800" height="100">
     </canvas>-->
+    
+    <div class="cover">
+        <div class="msg">
+            <span class="close">&times;</span>
+            <img width="400" height="300" src="" />
+            <p>OK, your public url is:</p>
+            <a href="http://12312.com">http://12312.com</a>
+            <p>You may copy it and share to your friends.</p>
+        </div>
+    </div>
  
 </body>
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.2.1.min.js"></script>
 <script>
 var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')
@@ -363,9 +425,45 @@ function handleButon(e) {
 controlButton.addEventListener('click', handleButon)
 controlButton.addEventListener('touchend', handleButon)
 
+document.querySelector('#rangeBar .save').addEventListener('click', function(e) {
+    e.preventDefault()
+    var dataURL = canvas.toDataURL("image/png")
+    window.open(dataURL, "Preview", "width=800, height=600")
+})
+document.querySelector('#rangeBar .share').addEventListener('click', function(e) {
+    e.preventDefault()
+    var dataURL = canvas.toDataURL("image/png").replace(/^data:image\/(png|jpg);base64,/, "")
+    
+    // try {
+    //     var img = document.getElementById('myCanvas').toDataURL('image/jpeg', 0.9).split(',')[1];
+    // } catch(e) {
+    //     var img = document.getElementById('myCanvas').toDataURL().split(',')[1];
+    // }
 
+    var clientId = '8ce65e964c3df45'
+    $.ajax({
+        url: 'https://api.imgur.com/3/image',
+        type: 'post',
+        data: {
+            image: dataURL,
+            type: 'base64'
+        },
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Client-ID " + clientId)
+        },
+        dataType: 'json',
+        success: function(response) {
+            document.querySelector('.cover').style.display = 'block'
+            document.querySelector('.cover .msg img').src = response.data.link
+            document.querySelector('.cover .msg a').innerHTML = response.data.link
+            document.querySelector('.cover .msg a').href = response.data.link
+        }
+    })
+})
 
-
+document.querySelector('.cover .close').addEventListener('click', function(e) {
+    document.querySelector('.cover').style.display = 'none'
+})
 </script>
     
     
