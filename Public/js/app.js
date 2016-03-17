@@ -9,8 +9,20 @@ socket && socket.on('draw', function(point) {
 var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')
 var isMousedownFlag = false
+var isRecording = false
 var startTime = 0
 var result = []
+var Brush = {
+    color: '#000',
+    mode: '',
+    size: 10
+}
+
+var sizeMap = {
+    large: 30,
+    medium: 10,
+    small: 5
+}
 
 var eventMap = {
     mousedown: 'start',
@@ -22,7 +34,30 @@ var eventMap = {
     mouseout: 'end'
 }
 
+// Optimize retina screen
+function scaleCanvas (scale) {
+    scale = window.devicePixelRatio || 1
+    var width = window.innerWidth
+    var height = window.innerHeight
+    canvas.width = width * window.devicePixelRatio
+    canvas.height = height * window.devicePixelRatio
+    canvas.style.width = width + 'px'
+    canvas.style.height = height + 'px'
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+}
+
+scaleCanvas()
+
 function renderDraw (point) {
+    // ctx.shadowOffsetX = 0
+    // ctx.shadowOffsetY = 0
+    // ctx.shadowBlur = 10
+    ctx.strokeStyle = point.brush.color
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
+    ctx.lineWidth = point.brush.size
+
+    ctx.globalCompositeOperation = point.brush.mode === 'erasure' ? 'destination-out' : 'source-over'
     if (point.type === 'start') {
       ctx.beginPath();
       return ctx.moveTo(point.x, point.y)
@@ -37,18 +72,22 @@ function handerDrawListen (e) {
     var type = eventMap[e.type]
     var rect = canvas.getBoundingClientRect()
     if (type === 'start') {
-        startTime = startTime || +new Date
         isMousedownFlag = true
     }
     if (!isMousedownFlag) return
     var point = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        x: e.clientX || e.targetTouches[0] && e.targetTouches[0].pageX - rect.left,
+        y: e.clientY || e.targetTouches[0] && e.targetTouches[0].pageY - rect.top,
         type: type,
-        t: +new Date - startTime
+        t: +new Date - startTime,
+        brush: {
+            size: Brush.size,
+            color: Brush.color,
+            mode: Brush.mode
+        }
     }
     renderDraw(point)
-    result.push(point)
+    isRecording && result.push(point)
     socket && socket.emit('drawClick', point)
     if (type === 'end') isMousedownFlag = false
 }
@@ -63,6 +102,7 @@ canvas.addEventListener('touchend', handerDrawListen)
 
 var rangeBarInput = document.getElementById('rangeBarInput')
 rangeBarInput.addEventListener('input', function(e) {
+  playTimer && clearInterval(playTimer)
   //  console.log(e.target.value)
   var curData = getArrayByPos(e.target.value)
   if (!curData.length) return
@@ -84,16 +124,16 @@ function getArrayByPos(pos) {
     data.some(function(item) {
         if (item.t < t * pos / 100) {
             array.push(item)
-        } 
+        }
      })
      return array
 }
 
 function handlePlay(e) {
-    var speed =  Math.min(result.length/10, 100)
-   // var speed =  result.length/100
     var data = result.slice(0)
+    if (!data.length) return
     var isPlaying = controlButton.className === 'controlButton'
+    var fps = 1000 / 60
     if (isPlaying) {
         controlButton.className = 'controlButton pause'
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -106,12 +146,12 @@ function handlePlay(e) {
                 return clearInterval(playTimer)
             }
             data.some(function (item) {
-                if (item.t < (duration += 16)) {
+                if (item.t < (duration += fps / 2)) {
                     rangeBarInput.value = duration / t * 100
                     renderDraw(data.shift())
                 } else return true
             })
-        }, 16)
+        }, fps)
     }
     else {
         controlButton.className = 'controlButton'
@@ -119,7 +159,22 @@ function handlePlay(e) {
     }
 }
 controlButton.addEventListener('click', handlePlay)
-controlButton.addEventListener('touchend', handlePlay)
+var recordBtn = document.querySelector('#rangeBar .record')
+recordBtn.addEventListener('click', function (e) {
+    if (!isRecording) {
+        result = []
+        startTime = +new Date
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.beginPath()
+        isRecording = true
+        recordBtn.className = 'record active'
+    } else {
+        isRecording = false
+        recordBtn.className = 'record'
+        controlButton.className = 'controlButton'
+        rangeBarInput.disabled = false
+    }
+})
 
 document.querySelector('#rangeBar .save').addEventListener('click', function(e) {
     e.preventDefault()
@@ -153,3 +208,48 @@ document.querySelector('#rangeBar .share').addEventListener('click', function(e)
 document.querySelector('.cover .close').addEventListener('click', function(e) {
     document.querySelector('.cover').style.display = 'none'
 })
+
+
+!function () {
+    var pens = document.querySelector('.tools .pen ul')  
+    var pen = document.querySelector('.tools .pen')
+    var erasure = document.querySelector('.tools .erasure')
+    var intro = document.querySelector('.intro')
+    setTimeout(function () {
+        intro.style.display = 'none'
+    }, 4000)
+
+    pen.addEventListener('click', function (e) {
+        document.body.className = Brush.mode = ''
+        if (e.target.tagName === 'LI') return
+        pens.style.display = pens.style.display === 'block' ? 'none' : 'block'
+    })
+
+    var handle = function (e) {
+        intro.style.display = 'none'
+        if (e.target.tagName === 'LI') {
+            var size = e.target.className
+            pen.className = 'pen ' + size
+            Brush.size = sizeMap[size]
+        }
+        if (!~e.target.parentNode.className.indexOf('pen')) pens.style.display = 'none'
+    }
+    document.addEventListener('mousedown', handle)
+    document.addEventListener('touchstart', handle)
+
+    $('.tools .color').colorPicker({
+        renderCallback: function($el, toggled) {
+            if (toggled === false) Brush.color = $el.css('background-color')
+        }
+    })
+
+    erasure.addEventListener('click', function () {
+        document.body.className = 'is-erasure'
+        Brush.mode = 'erasure'
+    })
+
+    document.querySelector('.tools .color').addEventListener('click', function (e) {
+        document.body.className = Brush.mode = ''
+    })
+}()
+

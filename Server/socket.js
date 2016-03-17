@@ -14,5 +14,8 @@ io.on('connection', function(socket) {
   socket.on('drawClick', function(data) {
     socket.broadcast.emit('draw', data)
   })
+  socket.on('sendMsg', function(data) {
+    socket.broadcast.emit('msg', data)
+  })
 })
 console.log('socket server 0.0.0.0:4000')
