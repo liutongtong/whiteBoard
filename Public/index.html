@@ -132,6 +132,20 @@
     </div>
  
 </body>
+<script src="http://192.168.1.79:3000/socket.io/socket.io.js"></script>
+<script>
+  var socket = io.connect('http://192.168.1.79:3000');
+  socket.emit('msg', { 'my': 'data' });
+  
+  socket.on('msg', function(data) {
+      console.log('from broadcast:', data)
+  });
+//   socket.on('news', function (data) {
+//     console.log(data);
+//     socket.emit('my other event', { my: 'data' });
+//   });
+</script>
+
 <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.2.1.min.js"></script>
 <script>
 var canvas = document.getElementById('canvas')
