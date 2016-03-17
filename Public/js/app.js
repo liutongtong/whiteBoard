@@ -1,8 +1,8 @@
-var socket = window.io && io.connect('/socket.io')
-socket && socket.on('connect', function(data) {
+var socket = window.io ? io.connect('/socket.io') : null
+socket && socket.on('status', function(data) {
     console.log('There are', data)
 })
-socket.on('draw', function(point) {
+socket && socket.on('draw', function(point) {
   renderDraw(point)
 })
 
