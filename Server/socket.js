@@ -1,9 +1,9 @@
 var io = require('socket.io')()
+var userNum = 0
 io.on('connection', function(socket) {
-  socket.on('msg', function (data) {
-    console.log(data)
+  socket.emit('connect', {
+    userNum: userNum++
   })
-  socket.emit('msg', {my: 'data'})
   socket.on('drawClick', function(data) {
     socket.broadcast.emit('draw', data)
   })
