@@ -1,4 +1,4 @@
-var io = require('socket.io').listen(4000)
+var io = require('socket.io')()
 io.on('connection', function(socket) {
   socket.on('msg', function (data) {
     console.log(data)
@@ -8,4 +8,5 @@ io.on('connection', function(socket) {
     socket.broadcast.emit('draw', data)
   })
 })
-console.log('socket server 0.0.0.0:3000')
+io.listen(4000);
+console.log('socket server 0.0.0.0:4000')
