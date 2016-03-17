@@ -5,6 +5,9 @@ socket && socket.on('status', function(data) {
 socket && socket.on('draw', function(point) {
   renderDraw(point)
 })
+socket && socket.on('reset', function() {
+  resetCanvas()
+})
 
 var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')
@@ -106,8 +109,7 @@ rangeBarInput.addEventListener('input', function(e) {
   //  console.log(e.target.value)
   var curData = getArrayByPos(e.target.value)
   if (!curData.length) return
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.beginPath()
+  resetCanvas()
   ctx.moveTo(curData[0].x, curData[0].y)
   curData.map(renderDraw)
 })
@@ -136,7 +138,7 @@ function handlePlay(e) {
     var fps = 1000 / 60
     if (isPlaying) {
         controlButton.className = 'controlButton pause'
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        resetCanvas()
         var t = data[data.length - 1].t - data[0].t
         var duration = 0
         playTimer = setInterval(function () {
@@ -147,7 +149,7 @@ function handlePlay(e) {
             }
             data.some(function (item) {
                 if (item.t < (duration += fps / 2)) {
-                    rangeBarInput.value = duration / t * 100
+                    rangeBarInput.value = duration / t * 100 / 2
                     renderDraw(data.shift())
                 } else return true
             })
@@ -164,8 +166,7 @@ recordBtn.addEventListener('click', function (e) {
     if (!isRecording) {
         result = []
         startTime = +new Date
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.beginPath()
+        resetCanvas()
         isRecording = true
         recordBtn.className = 'record active'
     } else {
@@ -209,15 +210,27 @@ document.querySelector('.cover .close').addEventListener('click', function(e) {
     document.querySelector('.cover').style.display = 'none'
 })
 
+function resetCanvas (e) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.beginPath()
+}
+
 
 !function () {
     var pens = document.querySelector('.tools .pen ul')  
     var pen = document.querySelector('.tools .pen')
     var erasure = document.querySelector('.tools .erasure')
     var intro = document.querySelector('.intro')
-    setTimeout(function () {
+    var resetBtn = document.querySelector('.tools .reset')
+
+/*    setTimeout(function () {
         intro.style.display = 'none'
-    }, 4000)
+    }, 4000)*/
+
+    resetBtn.addEventListener('click', function (e) {
+        resetCanvas(e)
+        socket && socket.emit('reset', {})
+    })
 
     pen.addEventListener('click', function (e) {
         document.body.className = Brush.mode = ''
@@ -226,7 +239,7 @@ document.querySelector('.cover .close').addEventListener('click', function(e) {
     })
 
     var handle = function (e) {
-        intro.style.display = 'none'
+        // intro.style.display = 'none'
         if (e.target.tagName === 'LI') {
             var size = e.target.className
             pen.className = 'pen ' + size

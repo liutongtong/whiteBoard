@@ -147,6 +147,17 @@ html, body {
     right: 1em;
 }
 
+.tools .reset {
+    font-size: 3em;
+    color: #f00;
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    line-height: 1;
+    cursor: pointer;
+}
+
 .tools .pen {
     margin-right: 10px;
     /* opacity: .7; */
@@ -245,8 +256,10 @@ html, body {
     width: 80%;
     top: 10%;
     left: 10%;
+    position: relative;
     /* height: 100%; */
-    position: absolute;
-    z-index: 10;
+    /* position: absolute; */
+    /* z-index: 10; */
     margin: auto;
+    opacity: .1;
 }

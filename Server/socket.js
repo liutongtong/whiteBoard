@@ -14,6 +14,9 @@ io.on('connection', function(socket) {
   socket.on('drawClick', function(data) {
     socket.broadcast.emit('draw', data)
   })
+  socket.on('reset', function(data) {
+    socket.broadcast.emit('reset', data)
+  })
   socket.on('sendMsg', function(data) {
     socket.broadcast.emit('msg', data)
   })
