@@ -1,4 +1,6 @@
-var io = require('socket.io')()
+var io = require('socket.io')(4000)
+  // Clinet: `io.connect('/socket.io')`
+  .of('socket.io')
 var userNum = 0
 io.on('connection', function(socket) {
   socket.emit('status', {
@@ -13,5 +15,4 @@ io.on('connection', function(socket) {
     socket.broadcast.emit('draw', data)
   })
 })
-io.listen(4000);
 console.log('socket server 0.0.0.0:4000')
