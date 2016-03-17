@@ -3,11 +3,11 @@ var io = require('socket.io')(4000)
   .of('socket.io')
 var userNum = 0
 io.on('connection', function(socket) {
-  socket.emit('status', {
+  socket.broadcast.emit('status', {
     userNum: userNum++
   })
   socket.on('disconnect', function() {
-    socket.emit('status', {
+    socket.broadcast.emit('status', {
       userNum: userNum--
     })
   })
