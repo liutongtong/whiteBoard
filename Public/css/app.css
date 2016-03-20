@@ -1,0 +1,265 @@
+* {margin: 0; padding: 0; box-sizing: border-box;}
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.background {
+    /* background: #eee; */
+    height: 100%;
+}
+
+.front {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 1em;
+}
+
+#canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: .5em solid #BABDB6;
+}
+
+#canvasScrollbar {
+    width: 800px;
+    height: 100px;
+    background: #00f;
+}
+
+.rangeBar{
+    width: 100%;
+    position: absolute;
+    /* background: #BABDB6; */
+    bottom: 0;
+    height: 90px;
+}
+
+.rangeBar input{
+    width: calc(100% - 330px);
+    vertical-align: middle;
+}
+
+.controlButton{
+    width: 35px;
+    height: 35px;
+    background: url(../img/play_black.png);
+    display: inline-block;
+    background-size: cover;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-left: 5px;
+}
+
+.controlButton.disable {
+    opacity: .5;
+    cursor: default;
+}
+
+.controlButton.record {
+    background-image: url(../img/record_active.png);
+}
+
+.controlButton.pause {
+    background-image: url(../img/pause_black.png);
+}
+
+.record {
+    width: 35px;
+    height: 35px;
+    background: url(../img/record.png);
+    display: inline-block;
+    background-size: cover;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-left: 20px;
+}
+
+.record.active {
+    background-image: url(../img/record_active.png);
+}
+
+.rangeBar .btn {
+    display: inline-block;
+    width: 50px;
+    margin-left: 10px;
+}
+
+.rangeBar .btn button {
+    width: 100%;
+    height: 25px;
+    padding: 5px;
+}
+
+.cover{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.5);
+    display: none;
+}
+
+.cover .msg {
+    position: absolute;
+    margin: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 400px;
+    height: 500px;
+    background: #fff;
+    font-size: 1.5em;
+    line-height: 1.5;
+    padding: 10px;
+}
+
+.cover .close {
+    position: absolute;
+    right: 10px;
+    font-size: 40px;
+    line-height: 0;
+    top: 20px;
+    cursor: pointer;
+}
+.tools {
+    position: absolute;
+    z-index: 9;
+    margin-top: -50px;
+    height: 50px;
+    right: 1em;
+}
+
+.tools .reset {
+    font-size: 3em;
+    color: #f00;
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.tools .pen {
+    margin-right: 10px;
+    /* opacity: .7; */
+    position: absolute;
+    left: -60px;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+}
+
+.tools .pen span{
+    background: #000;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    box-shadow: 0 1px 3px 0 #000,inset 0 -2px 0 0 rgba(0,0,0,.3);
+}
+
+.tools .pen ul{
+    position: relative;
+    /* bottom: 45px; */
+    /* left: -22px; */
+    text-align: center;
+    margin-top: -200px;
+    /* margin-left: -15px; */
+    display: none;
+}
+
+.tools .pen li{
+    /* margin: 0 10px; */
+    background: #000;
+    border-radius: 50%;
+    margin-top: 5px;
+    list-style: none;
+    display: inline-block;
+}
+
+.tools .small span,
+.tools li.small {
+    width: 30px;
+    height: 30px;
+}
+
+.tools .medium span,
+.tools li.medium {
+    width: 40px;
+    height: 40px;
+}
+
+.tools .large span,
+.tools li.large {
+    width: 50px;
+    height: 50px;
+}
+
+.tools .color {
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    background: #000;
+    margin-right: 10px;
+    box-shadow: 0 1px 3px 0 #000,inset 0 -2px 0 0 rgba(0,0,0,.3);
+    opacity: .7;
+}
+
+.tools .erasure {
+    background: #999;
+    border: 1px solid #000;
+    border-radius: 20%;
+    width: 60px;
+    height: 30px;
+    display: inline-block;
+    box-shadow: 0 1px 3px 0 #000,inset 0 -2px 0 0 rgba(0,0,0,.3);
+
+    opacity: .4;
+}
+
+.cp-color-picker {
+    margin-top: -140px;
+    margin-left: -20px;
+}
+
+.is-erasure .pen {
+    opacity: .2;
+}
+
+.is-erasure .color {
+    opacity: .2;
+}
+
+.is-erasure .erasure {
+    opacity: 1;
+}
+
+.intro {
+    width: 80%;
+    top: 10%;
+    left: 10%;
+    position: relative;
+    /* height: 100%; */
+    /* position: absolute; */
+    /* z-index: 10; */
+    margin: auto;
+    opacity: .1;
+}
